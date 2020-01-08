@@ -59,8 +59,8 @@ pipeline {
         success {
             echo 'This will run only if successful'
             sh '''
-                docker stop my-jenkins-app
-                docker rm my-jenkins-app
+                docker stop my-jenkins-app || true
+                docker rm my-jenkins-app || true 
                 docker run -d --name my-jenkins-app -p 8081:8080 my-jenkins-app:$image_version
             '''
         }
