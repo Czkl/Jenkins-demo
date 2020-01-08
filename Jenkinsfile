@@ -50,7 +50,7 @@ pipeline {
                 sh 'docker --version'
                 sh '''
                    echo $image_version
-                   docker build -t myapp:$image_version .
+                   docker build -t my-jenkins-app:$image_version .
                 '''
             }
         }
@@ -59,7 +59,7 @@ pipeline {
         success {
             echo 'This will run only if successful'
             sh '''
-                docker run -d --name myapp myapp:$image_version
+                docker run -d --name my-jenkins-app my-jenkins-app:$image_version
             '''
         }
     }
