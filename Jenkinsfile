@@ -61,7 +61,7 @@ pipeline {
             sh '''
                 docker stop my-jenkins-app
                 docker rm my-jenkins-app
-                docker run -d --name my-jenkins-app my-jenkins-app:$image_version
+                docker run -d --name my-jenkins-app -p 8081:8080 my-jenkins-app:$image_version
             '''
         }
     }
