@@ -34,9 +34,33 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+            agent{
+                docker{
+                    image 'docker'
+                }
             }
+            steps {
+                sh '''
+                   pwd
+                   ls
+                   which docker
+                   cat Jenkinsfile
+                   ls target
+                '''
+                sh 'docker --version'
+                sh '''
+                   echo $image_version
+                   docker build -t myapp:$image_version .
+                '''
+            }
+        }
+    }
+    post {
+        success {
+            echo 'This will run only if successful'
+            sh '''
+                docker run -d --name myapp myapp:$image_version
+            '''
         }
     }
 }
