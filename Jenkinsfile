@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment{
-        image_version = "v2"
+        image_version="v2"
     }
     stages {
         stage('Build') {
@@ -41,16 +41,20 @@ pipeline {
             }
             steps {
                 sh '''
-                   pwd
-                   ls
-                   which docker
-                   cat Jenkinsfile
-                   ls target
-                '''
-                sh 'docker --version'
-                sh '''
                    echo $image_version
                    docker build -t my-jenkins-app:$image_version .
+                '''
+            }
+        }
+        stage('Push Docker'){
+            agent{
+                docker{
+                    image 'docker'
+                }
+            }
+            steps{
+                sh '''
+                    echo "push docker image"
                 '''
             }
         }
