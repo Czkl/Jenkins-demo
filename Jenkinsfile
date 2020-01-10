@@ -56,9 +56,8 @@ pipeline {
             steps{
                 sh '''
                     echo "push docker image"
-                    echo ${DOCKERHUB_ACCOUNT}
-                    echo ${DOCKERHUB_ACCOUNT_USR}
-                    echo ${DOCKERHUB_ACCOUNT_PSW}
+                    
+                    echo ${DOCKERHUB_ACCOUNT_PSW} | docker login -u ${DOCKERHUB_ACCOUNT_USR}  --password-stdin
                 '''
             }
         }
