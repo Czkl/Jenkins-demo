@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment{
         image_version="v2"
+        DOCKERHUB_ACCOUNT = credentials ('dockerhub_account')
     }
     stages {
         stage('Build') {
@@ -55,6 +56,9 @@ pipeline {
             steps{
                 sh '''
                     echo "push docker image"
+                    echo ${DOCKERHUB_ACCOUNT}
+                    echo ${DOCKERHUB_ACCOUNT_USR}
+                    echo ${DOCKERHUB_ACCOUNT_PSW}
                 '''
             }
         }
