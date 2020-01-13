@@ -43,7 +43,7 @@ pipeline {
             steps {
                 sh '''
                    echo $image_version
-                   docker build -t my-jenkins-app:$image_version .
+                   docker build -t my-jenkins-app:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -53,11 +53,12 @@ pipeline {
                     image 'docker'
                 }
             }
-            steps{
+            steps {
                 sh '''
-                    echo "push docker image"
                     
-                    echo ${DOCKERHUB_ACCOUNT_PSW} | docker login -u ${DOCKERHUB_ACCOUNT_USR}  --password-stdin
+                    
+                    echo "${DOCKERHUB_ACCOUNT_PSW}" | docker login -u ${DOCKERHUB_ACCOUNT_USR}  --password-stdin
+                    docker push {DOCKERHUB_ACCOUNT_USR}/my-jenkins-app:${BUILD_NUMBER}
                 '''
             }
         }
