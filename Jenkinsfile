@@ -55,10 +55,8 @@ pipeline {
             }
             steps {
                 sh '''
-                    
-                    
                     echo "${DOCKERHUB_ACCOUNT_PSW}" | docker login -u ${DOCKERHUB_ACCOUNT_USR}  --password-stdin
-                    docker push {DOCKERHUB_ACCOUNT_USR}/my-jenkins-app:${BUILD_NUMBER}
+                    sudo docker push {DOCKERHUB_ACCOUNT_USR}/my-jenkins-app:${BUILD_NUMBER}
                 '''
             }
         }
