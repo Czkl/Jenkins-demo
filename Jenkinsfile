@@ -2,7 +2,6 @@ pipeline {
     agent any
     environment{
         image_version="v2"
-        DOCKERHUB_ACCOUNT = credentials ('dockerhub_account')
     }
     stages {
         stage('Build') {
@@ -44,20 +43,6 @@ pipeline {
                 sh '''
                    echo $image_version
                    docker build -t my-jenkins-app:${BUILD_NUMBER} .
-                '''
-            }
-        }
-        stage('Push Docker'){
-            agent{
-                docker{
-                    image 'docker'
-                }
-            }
-            steps {
-                sh '''
-                    docker login -u "${DOCKERHUB_ACCOUNT_USR}"  --password "${DOCKERHUB_ACCOUNT_PSW}"
-                    docker tag my-jenkins-app:${BUILD_NUMBER} ${DOCKER_ACCOUNT_USR}/my-jenkins-app:${BUILD_NUMBER}
-                    docker push {DOCKERHUB_ACCOUNT_USR}/my-jenkins-app:${BUILD_NUMBER}
                 '''
             }
         }
