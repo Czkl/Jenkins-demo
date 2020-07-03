@@ -5,23 +5,24 @@ pipeline {
     }
     stages {
         stage('Build') {
-            agent {
-                label 'master'
-            }
             steps {
                 sh 'pwd'
             }
         }
         stage('Test') {
-            agent {
-                label 'master'
-            }
             steps {
                 sh 'pwd'
             }
             post {
-
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
+        }
+    }
+    post {
+        success {
+            echo 'This will run only if successful'
         }
     }
 }
