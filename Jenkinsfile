@@ -13,11 +13,6 @@ pipeline {
             steps {
                 sh 'pwd'
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
         }
     }
     post {
