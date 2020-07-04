@@ -1,0 +1,83 @@
+#!/bin/sh
+set -e
+
+BASEDIR=$(dirname "$0")
+cd $BASEDIR
+
+DOCKER_REGISTRY=${DOCKER_REGISTRY:=registry-vpc.cn-beijing.aliyuncs.com/gaia-iw}
+APP_NAME=bee-auth
+APP_DOC=bee-auth-doc
+
+VERSION=$(git log -n 1 --pretty=format:'%h')
+IMAGE=$DOCKER_REGISTRY/$APP_NAME:$VERSION
+IMAGE_DOC=$DOCKER_REGISTRY/$APP_DOC:$VERSION
+
+HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:=45s}
+
+testMysql() {
+  SPRING_PROFILES_ACTIVE=mysql ./gradlew clean test
+}
+
+testPG() {
+  SPRING_PROFILES_ACTIVE=postgres ./gradlew clean test
+}
+
+composeDown() {
+  docker-compose -p $APP_NAME down --remove-orphans
+}
+
+composeUp() {
+  docker-compose -p $APP_NAME up -d
+}
+
+build() {
+  ./gradlew clean build -x test
+  docker build -t $APP_NAME .
+  docker tag $APP_NAME:latest $IMAGE
+  docker push $IMAGE
+  docker image rm $APP_NAME || true
+  docker image rm $IMAGE
+}
+
+buildDoc() {
+  docker build -t $APP_DOC ./doc
+  docker tag $APP_DOC:latest $IMAGE_DOC
+  docker push $IMAGE_DOC
+  docker image rm $APP_DOC || true
+  docker image rm $IMAGE_DOC
+}
+
+deploy() {
+  /usr/local/bin/kubectl create -f k8s_configs.yaml --namespace=$NAMESPACE || true
+
+  cat k8s.yml | \
+  sed 's|\$ENV'"|$ENV|g" | \
+  sed 's|\$TOLERATE'"|$TOLERATE|g" | \
+  sed 's|\$IMAGE'"|$IMAGE|g" | \
+  sed 's|\$APP_NAME'"|$APP_NAME|g" | \
+  sed 's|\$BEEAUTH_HOST'"|$BEEAUTH_HOST|g" | \
+  sed 's|\$BEEAUTH_WEB_HOST'"|$BEEAUTH_WEB_HOST|g" | \
+  /usr/local/bin/kubectl apply --namespace=$NAMESPACE -f -
+
+  /usr/local/bin/kubectl rollout status deploy/$APP_NAME -n $NAMESPACE --timeout=$HEALTH_CHECK_TIMEOUT
+}
+
+deployDoc() {
+  cat doc/k8s.yml | \
+  sed 's|\$ENV'"|$ENV|g" | \
+  sed 's|\$TOLERATE'"|$TOLERATE|g" | \
+  sed 's|\$IMAGE'"|$IMAGE_DOC|g" | \
+  sed 's|\$APP_NAME'"|$APP_DOC|g" | \
+  sed 's|\$HOST'"|$BEEAUTH_HOST|g" | \
+  /usr/local/bin/kubectl apply --namespace=$NAMESPACE -f -
+
+  /usr/local/bin/kubectl rollout status deploy/$APP_DOC -n $NAMESPACE --timeout=$HEALTH_CHECK_TIMEOUT
+}
+
+case $1 in
+ testMysql|testPG|composeUp|composeDown|build|deploy|buildDoc|deployDoc )
+   $1;;
+ * )
+   echo "not support!!! example: go <test|composeDown|build|deploy>"
+   exit 1;;
+esac
