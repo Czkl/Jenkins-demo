@@ -9,6 +9,8 @@ testPG() {
     failure=`curl -u ${JENKINS_ACCOUNT_USR}:${JENKINS_ACCOUNT_PSW} ${JOB_URL}/${lastNumber}/api/xml | grep -c '<result>FAILURE</result>'` || true
 
     if ( "${lastTime%/*}" -gt "${today}" || failure == "1") ;then
-     echo "test pg"
+        echo "test pg"
+    else
+        echo "666666"
     fi
 }
