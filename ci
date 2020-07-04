@@ -3,18 +3,12 @@ set -e
 
 testPG() {
 
-    def lastBuildTime = sh(script: "curl -u ${JENKINS_ACCOUNT_USR}:${JENKINS_ACCOUNT_PSW} ${JOB_URL}/lastBuild/buildTimestamp", returnStdout: true).trim()
-    def today = sh(script: "date +'%-m/%-d/%y %-R %p'", returnStdout: true).trim()
-    def failure = sh(script: "curl -u ${JENKINS_ACCOUNT_USR}:${JENKINS_ACCOUNT_PSW} ${JOB_URL}/lastBuild/api/xml | grep -c '<result>FAILURE</result>' || true", returnStdout: true).trim()
+    lastNumber=`expir ${BUILD_NUMBER} - 1`
+    lastTime=`curl -u ${JENKINS_ACCOUNT_USR}:${JENKINS_ACCOUNT_PSW} ${JOB_URL}/${lastNumber}/buildTimestamp`
+    today=`date +"%-m/%-d"`
+    failure=`curl -u ${JENKINS_ACCOUNT_USR}:${JENKINS_ACCOUNT_PSW} ${JOB_URL}/${lastNumber}/api/xml | grep -c '<result>FAILURE</result>'` || true
 
-    lastBuildTime = lastBuildTime.substring(0,lastBuildTime.lastIndexOf("/"))
-    today = today.substring(0,today.lastIndexOf("/"))
-
-    println("-------------")
-    println(lastBuildTime)
-    println(today)
-    if (today.compareTo(lastBuildTime) || failure == "1") {
-        println("test pg")
-    }
-    println("-------------")
+    if ( "${lastTime%/*}" -gt "${today}" || failure == "1") ;then
+     echo "test pg"
+    fi
 }
